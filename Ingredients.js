@@ -4,7 +4,10 @@ import * as Font from 'expo-font';
 import { FlatList } from 'react-native-gesture-handler';
 import { CheckBox, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { SearchBar } from 'react-native-elements';
+import {Dimensions } from "react-native";
 
+const screenWidth = Math.round(Dimensions.get('window').width);
 
 const DATA = [
     {
@@ -28,6 +31,7 @@ const DATA = [
 export default class Ingredients extends Component {
     state = {
         list: DATA,
+        search: ''
     }
     
     async componentDidMount() {
@@ -39,39 +43,57 @@ export default class Ingredients extends Component {
         });
     }
 
-    checkThisBox=(itemID)=>{
+    checkThisBox=(id)=>{
         let list=this.state.list
-        list[itemID].checked=!list[itemID].checked
+        const index = list.findIndex(
+          item => item.id === id
+        );
+        list[index].checked = !list[index].checked
         this.setState({list:list})
     }
 
+    deleteItem=(id)=>{
+      this.setState({
+        list: this.state.list.filter(item => item.id !== id)
+       })
+    }
+
+    updateSearch = search => {
+      this.setState({ search });
+    };
+
+    addIngredient = search => {
+      let list = this.state.list
+      let item = {
+        id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+        title: this.state.search,
+        checked: true
+      }
+      list.push(item)
+      this.setState({list:list, search: ''})
+    }
 
     renderItem = ({ item }) => (
         <View style={styles.itemContainer}>
             <View style={styles.item} key={item.key}>
                 <CheckBox
-                    checked={this.state.list[item.id].checked}
+                    checked={item.checked}
                     onPress={() => this.checkThisBox(item.id)}
                     checkedColor='black'
                     uncheckedColor='black'
                     />
                 <Text>{item.title}</Text>
-                <Button
+                <Icon.Button
+                    name ='trash'
+                    size={30}
+                    color='#000'
+                    backgroundColor="#FFF"
                     onPress = { () => this.deleteItem(item.id) }
-                    >
-                    <Icon name = { 'trash' } size={15}/>                
-                </Button>
+                    >               
+                </Icon.Button>
             </View>
         </View>
     );
-
-
-    onCheck = (i) => {
-        console.log('yes')
-        let items = this.state.data;
-        items[i].checked = items[i].checked ? ! items[i].checked : true
-        this.setState({data:items})
-    }
 
     render() {
         return (
@@ -84,7 +106,22 @@ export default class Ingredients extends Component {
                         <Text style={styles.subHeaderText}>WHAT'S IN YOUR KITCHEN</Text>
                     </View>
                 </View>
-                <View style={{flex: 3.5, alignItems: "flex-start", flexDirection: 'row', padding: 20}}>
+                <View style={{flex: 0.4, alignItems: "stretch", flexDirection: 'row'}}>
+                  <SearchBar
+                    inputStyle={{color: '#FFF'}}
+                    inputContainerStyle={styles.searchbar1}
+                    containerStyle={styles.searchbar}
+                    placeholder="Enter ingredient to add..."
+                    placeholderTextColor='#FFF'
+                    onChangeText={this.updateSearch}
+                    value={this.state.search}
+                    searchIcon={<Icon name='search' color='#FFF'size={15}/>}
+                    clearIcon={<Icon name='close' color='#FFF' size={20}
+                        onPress={() => this.setState({search: ''})}/>}
+                    onSubmitEditing={this.addIngredient}
+                  />
+                </View>
+                <View style={{flex: 4, alignItems: "flex-start", flexDirection: 'row', padding: 20}}>
                     <FlatList
                         keyExtractor={item => item.id}
                         data={this.state.list}
@@ -115,7 +152,8 @@ const styles = StyleSheet.create({
     fontFamily : 'Roboto-Bold',
     color: 'black',
     fontSize: 14,
-    flex: 1
+    flex: 1,
+    marginTop: 10
   },
   container: {
     flex: 1,
@@ -126,15 +164,28 @@ const styles = StyleSheet.create({
   itemContainer: {
     flex: 1,
     flexDirection:'column',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
   },
   item: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     paddingBottom: 5,
     marginHorizontal: 1,
+  },
+  searchbar: {
+    backgroundColor: '#FFBE16',
+    borderColor: '#FFF',
+    alignItems: 'stretch',
+    borderBottomColor: 'transparent',
+    borderTopColor: 'transparent',
+    borderBottomRightRadius: 20
+  },
+  searchbar1: {
+    backgroundColor: '#FFBE16',
+    alignItems: 'stretch',
+    width: screenWidth - 70
   },
 });
