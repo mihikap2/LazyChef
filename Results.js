@@ -3,37 +3,123 @@ import { StyleSheet, Text, View, FlatList, Image, ScrollView } from 'react-nativ
 import * as Font from 'expo-font';
 import {Dimensions, TouchableOpacity} from 'react-native';
 import Modal from "react-native-modal";
+import './global.js'
 
 const current = { 'title': 'hello'}
 const screenwidth = Math.round(Dimensions.get('window').width);
+
+
 export default class Results extends Component {
    state = {
      RECIPES : [],
      modalVisible: false,
-     currentRecipe: current
+     currentRecipe: current,
+     instructions: current,
+     steps: '',
+     ingredients: '' 
   }
 
+//   async ProfileScreen({ navigation }) {
+//     React.useEffect(() => {
+//       const unsubscribe = navigation.addListener('focus', () => {
+//         console.log("RESULTS - INGRED" + global.list)
+//       try {
+//           const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients=pasta,+cheese,+tomatoes&number=2&apiKey=876b0629a83b4ec8838219d394e10362');
+//           const recipes = await recipeApiCall.json();
+//           let used = new Set();
+
+//           for (let obj of recipes) {
+//             const imageApiCall = await fetch('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
+//             const image = await imageApiCall.json()
+
+//             for(let i = 0; i < 5; i++) {
+//               const url = image.results[i].urls.regular
+//               if (!used.has(url)) {
+//                 used.add(url)
+//                 obj.image = url
+//                 console.log(url)
+//                 break
+//               }
+//             }
+//           }
+//           this.setState({RECIPES: recipes, loading: false});
+
+//           console.log(this.state.RECIPES)
+//       } catch(err) {
+//           console.log("Error fetching data-----------", err);
+//       }
+//       });
+  
+//       // Return the function to unsubscribe from the event so it gets removed on unmount
+//       return unsubscribe;
+//     }, [navigation]);
+//     return <View />;
+// }
+
+
     async componentDidMount() {
+      console.log("RESULTS - INGRED" + global.list)
         await Font.loadAsync({
           'Comfortaa-Regular': require('./assets/fonts/Comfortaa-Regular.ttf'),
           'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
         });
 
       try {
-          const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients=apples,+flour,+sugar&apiKey=3ed3af1b161a4417b17bf1c6772badc6');
+          const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients=pasta,+cheese,+tomatoes&number=2&apiKey=876b0629a83b4ec8838219d394e10362');
           const recipes = await recipeApiCall.json();
+          let used = new Set();
+
+          for (let obj of recipes) {
+            const imageApiCall = await fetch('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
+            const image = await imageApiCall.json()
+
+            for(let i = 0; i < 5; i++) {
+              const url = image.results[i].urls.regular
+              if (!used.has(url)) {
+                used.add(url)
+                obj.image = url
+                console.log(url)
+                break
+              }
+            }
+          }
           this.setState({RECIPES: recipes, loading: false});
+
           console.log(this.state.RECIPES)
       } catch(err) {
           console.log("Error fetching data-----------", err);
       }
+    }
 
+    async showRecipe (item) {
+      let INSTRUCTIONS = '';
+      this.setState({modalVisible: true, currentRecipe: item})
+      try {
+        const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() +'/analyzedInstructions?apiKey=876b0629a83b4ec8838219d394e10362'
+        const recipeApiCall = await fetch(uri);
+        INSTRUCTIONS = await recipeApiCall.json();        
+        
+      } catch(err) {
+          console.log("Error fetching data-----------", err);
+      }
+      this.setState({instructions: INSTRUCTIONS});
+      let STEPS = ''
+      let stepList = this.state.instructions[0].steps
+      stepList.map((item) => {
+        STEPS += item.number + '. ' + item.step + '\n\n';
+      })
+      let INGREDIENTS = ''
+      let ingredientList = item.missedIngredients
+      ingredientList.map((item, index) => {
+        INGREDIENTS += item.originalString + '\n\n';
+      })
+    this.setState({steps: STEPS, ingredients: INGREDIENTS})
     }
     
 
     renderItem = ({ item }) => (
       <View style={styles.itemContainer}>
-          <TouchableOpacity style={styles.item} key={item.key} onPress={()=> this.setState({modalVisible: true, currentRecipe: item})}>
+          <TouchableOpacity style={styles.item} key={item.key} onPress={() => this.showRecipe(item)}>
           <Image
             style={{width: screenwidth - 40, height: 180, borderRadius: 50 / 2}}
             source={{uri: item.image}}/>
@@ -68,10 +154,23 @@ export default class Results extends Component {
                       <Text style={{
                           fontFamily : 'Comfortaa-Regular',
                           color: 'black',
-                          marginHorizontal: 35,
                           fontSize: 24,
+                          textAlign: 'center',
+                          marginHorizontal: 10,
                           paddingVertical: 25
                         }}>{this.state.currentRecipe.title }</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.smallHeader}>Ingredients</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.text}>{this.state.ingredients}</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.smallHeader}>Instructions</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.text}>{this.state.steps}</Text>
                   </View>
                   </ScrollView>
                 
@@ -154,5 +253,17 @@ const styles = StyleSheet.create({
         fontSize: 16, 
         textAlign: "right", 
         paddingRight: 10
+      },
+      smallHeader: {
+        fontFamily : 'Comfortaa-Regular',
+        color: 'black',
+        fontSize: 18,
+        marginHorizontal: 35,
+        marginBottom: 5,
+      },
+      text : {
+        color: 'black',
+        fontSize: 12,
+        marginHorizontal: 35
       }
 });

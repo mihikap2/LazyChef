@@ -6,26 +6,11 @@ import { CheckBox, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SearchBar } from 'react-native-elements';
 import { Dimensions } from "react-native";
+import './global.js'
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 
-const DATA = [
-    {
-      id: '0',
-      title: 'Milk',
-      checked: false,
-    },
-    {
-      id: '1',
-      title: 'Eggs',
-      checked: true,
-    },
-    {
-      id: '2',
-      title: 'Bread',
-      checked: true,
-    },
-  ];
+const DATA = global.list
 
 
 export default class Ingredients extends Component {
@@ -41,6 +26,9 @@ export default class Ingredients extends Component {
           'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
 
         });
+    }
+    componentDidUpdate() {
+      global.list = this.state.list
     }
 
     checkThisBox=(id)=>{

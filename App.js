@@ -6,7 +6,7 @@ import Ingredients from './Ingredients';
 import Results from './Results';
 import Favorites from './Favorites';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import './global.js'
 
 const Tab = createBottomTabNavigator();
 
