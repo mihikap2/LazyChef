@@ -1,12 +1,15 @@
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, FlatList, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
 import * as Font from 'expo-font';
 import {Dimensions, TouchableOpacity} from 'react-native';
 import Modal from "react-native-modal";
-import './global.js'
+import './App.js'
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 const current = { 'title': 'hello'}
 const screenwidth = Math.round(Dimensions.get('window').width);
+const screenheight = Math.round(Dimensions.get('window').height);
 
 
 export default class Results extends Component {
@@ -16,86 +19,119 @@ export default class Results extends Component {
      currentRecipe: current,
      instructions: current,
      steps: '',
-     ingredients: '' 
+     ingredients: '',
+     loading: false 
   }
 
-//   async ProfileScreen({ navigation }) {
-//     React.useEffect(() => {
-//       const unsubscribe = navigation.addListener('focus', () => {
-//         console.log("RESULTS - INGRED" + global.list)
-//       try {
-//           const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients=pasta,+cheese,+tomatoes&number=2&apiKey=876b0629a83b4ec8838219d394e10362');
-//           const recipes = await recipeApiCall.json();
-//           let used = new Set();
-
-//           for (let obj of recipes) {
-//             const imageApiCall = await fetch('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
-//             const image = await imageApiCall.json()
-
-//             for(let i = 0; i < 5; i++) {
-//               const url = image.results[i].urls.regular
-//               if (!used.has(url)) {
-//                 used.add(url)
-//                 obj.image = url
-//                 console.log(url)
-//                 break
-//               }
-//             }
-//           }
-//           this.setState({RECIPES: recipes, loading: false});
-
-//           console.log(this.state.RECIPES)
-//       } catch(err) {
-//           console.log("Error fetching data-----------", err);
-//       }
-//       });
-  
-//       // Return the function to unsubscribe from the event so it gets removed on unmount
-//       return unsubscribe;
-//     }, [navigation]);
-//     return <View />;
-// }
-
-
     async componentDidMount() {
-      console.log("RESULTS - INGRED" + global.list)
+      const { navigation } = this.props;
         await Font.loadAsync({
           'Comfortaa-Regular': require('./assets/fonts/Comfortaa-Regular.ttf'),
           'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
         });
+        let INGREDIENTS = ''
+          global.list.map((item) => {
+            if (item.checked) {
+              INGREDIENTS += item.title + ',+';
+            }
+          })
+          INGREDIENTS = INGREDIENTS.slice(0, -2)
+          // console.log(INGREDIENTS)
+          this.setState({ loading: true })
 
-      try {
-          const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients=pasta,+cheese,+tomatoes&number=2&apiKey=876b0629a83b4ec8838219d394e10362');
-          const recipes = await recipeApiCall.json();
-          let used = new Set();
-
-          for (let obj of recipes) {
-            const imageApiCall = await fetch('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
-            const image = await imageApiCall.json()
-
-            for(let i = 0; i < 5; i++) {
-              const url = image.results[i].urls.regular
-              if (!used.has(url)) {
-                used.add(url)
-                obj.image = url
-                console.log(url)
-                break
+          try {
+            const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients='+INGREDIENTS+'&apiKey=550d7b10c49b4500b59cca143ff98c59');
+            console.log('https://api.spoonacular.com/recipes/findByIngredients?ingredients='+INGREDIENTS+'&apiKey=550d7b10c49b4500b59cca143ff98c59')
+            const recipes = await recipeApiCall.json();
+            // console.log(recipes)
+            let used = new Set();
+  
+            for (let obj of recipes) {
+              console.log('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
+              const imageApiCall = await fetch('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
+              const image = await imageApiCall.json()
+              this.setState({ loading: false })
+              console.log(image.total)
+              if (image.total > 3) {
+                for(let i = 0; i < 3; i++) {
+                  const url = image.results[i].urls.regular
+                  if (!used.has(url)) {
+                    used.add(url)
+                    obj.image = url
+                    // console.log(url)
+                    break
+                  }
+                }
               }
             }
+            this.setState({RECIPES: recipes});
+            } catch(err) {
+              // console.log(this.state.RECIPES)
+              console.log("Error fetching data in image-----------", err);
           }
-          this.setState({RECIPES: recipes, loading: false});
 
-          console.log(this.state.RECIPES)
-      } catch(err) {
-          console.log("Error fetching data-----------", err);
-      }
+        this._unsubscribe = navigation.addListener('focus', async () => {
+          // console.log("RESULTS - INGRED" + global.list)
+          let INGREDIENTS = ''
+          global.list.map((item) => {
+            if (item.checked) {
+              INGREDIENTS += item.title + ',+';
+            }
+          })
+          INGREDIENTS = INGREDIENTS.slice(0, -2)
+          // console.log(INGREDIENTS)
+          this.setState({ loading: true })
+
+          try {
+            const recipeApiCall = await fetch('https://api.spoonacular.com/recipes/findByIngredients?ingredients='+INGREDIENTS+'&apiKey=550d7b10c49b4500b59cca143ff98c59');
+            console.log('https://api.spoonacular.com/recipes/findByIngredients?ingredients='+INGREDIENTS+'&apiKey=550d7b10c49b4500b59cca143ff98c59')
+            const recipes = await recipeApiCall.json();
+            // console.log(recipes)
+            let used = new Set();
+  
+            for (let obj of recipes) {
+              console.log('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
+              const imageApiCall = await fetch('https://api.unsplash.com/search/photos?page=1&query='+ obj.title +'&client_id=xD2GLsLM2FYyWPuH0YbXJ8bG9aNAkyjUOx_lH6AP03c')
+              const image = await imageApiCall.json()
+              this.setState({ loading: false })
+              console.log(image.total)
+              if (image.total > 3) {
+                for(let i = 0; i < 3; i++) {
+                  const url = image.results[i].urls.regular
+                  if (!used.has(url)) {
+                    used.add(url)
+                    obj.image = url
+                    // console.log(url)
+                    break
+                  }
+                }
+              }
+            }
+            this.setState({RECIPES: recipes});
+            } catch(err) {
+              // console.log(this.state.RECIPES)
+              console.log("Error fetching data in image-----------", err);
+          }
+          
+
+        });
+        this.blurListener = navigation.addListener('blur', async () => {
+          this.setState({RECIPES: []})
+          this.setState({loading: false});
+        });
+     
+    }
+
+    componentWillUnmount() {
+      this._unsubscribe();
+      this.blurListener();
     }
 
     async showRecipe (item) {
       let INSTRUCTIONS = '';
       this.setState({modalVisible: true, currentRecipe: item})
       try {
-        const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() +'/analyzedInstructions?apiKey=876b0629a83b4ec8838219d394e10362'
+        const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() +'/analyzedInstructions?apiKey=550d7b10c49b4500b59cca143ff98c59'
         const recipeApiCall = await fetch(uri);
         INSTRUCTIONS = await recipeApiCall.json();        
         
@@ -119,19 +155,45 @@ export default class Results extends Component {
 
     renderItem = ({ item }) => (
       <View style={styles.itemContainer}>
-          <TouchableOpacity style={styles.item} key={item.key} onPress={() => this.showRecipe(item)}>
-          <Image
-            style={{width: screenwidth - 40, height: 180, borderRadius: 50 / 2}}
-            source={{uri: item.image}}/>
-          </TouchableOpacity>
-          <View style={styles.recipeNameBox}>
-            <Text style={styles.recipeName}>{item.title.toLowerCase()}</Text>
-          </View>
+        <TouchableOpacity style={styles.item} key={item.key} onPress={() => this.showRecipe(item)}>
+        <Image
+          style={{width: screenwidth - 40, height: 180, borderRadius: 50 / 2}}
+          source={{uri: item.image}}/>
+        </TouchableOpacity>
+        <View style={{ flex: 1, position: "absolute", 
+        right: 15,
+        top: 5,backgroundColor: 'rgba(52, 52, 52, alpha)'}}>
+          <Icon.Button name="heart" color={'#FFBE16'} size={30} backgroundColor='transparent' 
+            onPress={() => this.addFavorite(item)}/>
+        </View>
+        <View style={styles.recipeNameBox}>
+          <Text style={styles.recipeName}>{item.title.toLowerCase()}</Text>
+        </View>
       </View>
   );
 
     render() {
-      console.log(this.state.currentRecipe)
+      // console.log(this.state.currentRecipe)
+      if (this.state.loading) {
+        return (
+          <View style={styles.container}>
+            <View style={styles.pageheader}>
+              <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row'}}>
+                  <Text style={styles.headerText}>Results</Text>
+              </View>
+              <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row'}}>
+                  <Text style={styles.subHeaderText}>LET'S GET COOKING</Text>
+              </View>
+            </View>
+            {/*Code to show Activity Indicator*/}
+            <View style={{flex: 4, alignItems: "center", flexDirection: 'row'}}>
+              <ActivityIndicator size="large" color="#000000" />
+            </View>
+            
+            {/*Size can be large/ small*/}
+          </View>
+        );
+      } else 
         return (
             <View style={styles.container}>
               <View style={{
@@ -146,7 +208,7 @@ export default class Results extends Component {
                 isVisible={this.state.modalVisible}
                 onBackdropPress={()=> this.setState({modalVisible: false})}
                 >
-                <ScrollView style={{flex: 0.8, marginTop: 150, width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+                <ScrollView style={{flex: 0.8, marginTop: 150 , width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
                 <Image
                   style={{width: screenwidth, height: 240, borderTopLeftRadius: 25, borderTopRightRadius: 25}}
                   source={{uri: this.state.currentRecipe.image}}/>
