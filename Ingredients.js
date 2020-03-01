@@ -5,24 +5,24 @@ import { FlatList } from 'react-native-gesture-handler';
 import { CheckBox, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SearchBar } from 'react-native-elements';
-import {Dimensions } from "react-native";
+import { Dimensions } from "react-native";
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 
 const DATA = [
     {
       id: '0',
-      title: 'First Item',
+      title: 'Milk',
       checked: false,
     },
     {
       id: '1',
-      title: 'Second Item',
+      title: 'Eggs',
       checked: true,
     },
     {
       id: '2',
-      title: 'Third Item',
+      title: 'Bread',
       checked: true,
     },
   ];
