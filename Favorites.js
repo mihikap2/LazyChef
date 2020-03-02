@@ -1,16 +1,17 @@
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, ScrollView, ActivityIndicator, AsyncStorage } from 'react-native';
 import * as Font from 'expo-font';
 import {Dimensions, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from "react-native-modal";
+
 
 const current = { 'title': 'hello'}
 const screenwidth = Math.round(Dimensions.get('window').width);
 
 export default class Favorites extends Component {
   state = {
-    list : global.favoriteList,
+    list : [],
     modalVisible: false,
     currentRecipe: current,
     instructions: current,
@@ -22,10 +23,51 @@ export default class Favorites extends Component {
         'Comfortaa-Regular': require('./assets/fonts/Comfortaa-Regular.ttf'),
         'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
       });
+      let LIST = []
+        AsyncStorage.getAllKeys((err, keys) => {
+          AsyncStorage.multiGet(keys, (error, stores) => {
+            stores.map((result, i, store) => {
+              let id = store[i][0]
+              let name = store[i][1].split(",")[0]
+              let url = store[i][1].split(",")[1]
+              let obj = {'id': id, 'name': name, 'url': url}
+              LIST.push(obj)
+            });
+            this.setState({list: LIST})
+            console.log(LIST)
+          });
+        });   
       const { navigation } = this.props;
       this._unsubscribe = navigation.addListener('focus', async () => { 
-        this.setState({list: global.favoriteList})
-    });
+        let LIST = []
+        AsyncStorage.getAllKeys((err, keys) => {
+          AsyncStorage.multiGet(keys, (error, stores) => {
+            stores.map((result, i, store) => {
+              let id = store[i][0]
+              let name = store[i][1].split(",")[0]
+              let url = store[i][1].split(",")[1]
+              let obj = {'id': id, 'name': name, 'url': url}
+              LIST.push(obj)
+            });
+            this.setState({list: LIST})
+            console.log(LIST)
+          });
+        });     
+      });
+
+      
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe();
+  }
+
+  removeFavorite(id) {
+    AsyncStorage.removeItem(id)
+    this.setState({
+      list: this.state.list.filter(item => item.id !== id)
+     })
+     
   }
     
   async showRecipe (item) {
@@ -58,10 +100,16 @@ export default class Favorites extends Component {
         <TouchableOpacity style={styles.item} key={item.key} onPress={() => this.showRecipe(item)}>
         <Image
           style={{width: screenwidth - 40, height: 180, borderRadius: 50 / 2}}
-          source={{uri: item.image}}/>
+          source={{uri: item.url}}/>
         </TouchableOpacity>
+        <View style={{ flex: 1, position: "absolute", 
+        right: 15,
+        top: 5,backgroundColor: 'transparent'}}>
+          <Icon.Button name="trash" color={'#ffBE16'} size={30} backgroundColor='transparent' 
+            onPress={() => this.removeFavorite(item.id)}/>
+        </View>
         <View style={styles.recipeNameBox}>
-          <Text style={styles.recipeName}>{item.title.toLowerCase()}</Text>
+          <Text style={styles.recipeName}>{item.name.toLowerCase()}</Text>
         </View>
     </View>
   );
@@ -113,7 +161,7 @@ export default class Favorites extends Component {
               </View>
 
                 <View style={styles.pageheader}>
-                    <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row'}}>
+                    <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row', marginBottom: 30}}>
                         <Text style={styles.headerText}>Favorites</Text>
                     </View>
                     <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row'}}>
@@ -134,8 +182,9 @@ export default class Favorites extends Component {
 
 const styles = StyleSheet.create({
   pageheader : {
-    margin: 35,
-    flex : 1,
+    marginHorizontal: 35,
+    marginTop: 35,
+    flex : 0.8,
     alignItems: 'flex-start',
     flexDirection: 'column'
   },
@@ -144,7 +193,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     color: 'black',
     fontSize: 24,
-    flex: 2
+    flex: 2,
+    marginBottom: 5
   },
   subHeaderText : {
     fontFamily : 'Roboto-Bold',

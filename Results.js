@@ -5,6 +5,7 @@ import {Dimensions, TouchableOpacity} from 'react-native';
 import Modal from "react-native-modal";
 import './App.js'
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {AsyncStorage} from 'react-native';
 
 
 const current = { 'title': 'hello'}
@@ -127,6 +128,10 @@ export default class Results extends Component {
       this.blurListener();
     }
 
+    addFavorite(item) {
+      AsyncStorage.setItem(item.id.toString(), item.title + "," + item.image);
+    }
+
     async showRecipe (item) {
       let INSTRUCTIONS = '';
       this.setState({modalVisible: true, currentRecipe: item})
@@ -162,7 +167,7 @@ export default class Results extends Component {
         </TouchableOpacity>
         <View style={{ flex: 1, position: "absolute", 
         right: 15,
-        top: 5,backgroundColor: 'rgba(52, 52, 52, alpha)'}}>
+        top: 5,backgroundColor: 'transparent'}}>
           <Icon.Button name="heart" color={'#FFBE16'} size={30} backgroundColor='transparent' 
             onPress={() => this.addFavorite(item)}/>
         </View>
