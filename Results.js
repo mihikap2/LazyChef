@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import * as Font from 'expo-font';
 import {Dimensions, TouchableOpacity} from 'react-native';
 import Modal from "react-native-modal";
@@ -21,7 +21,7 @@ export default class Results extends Component {
      instructions: current,
      steps: '',
      ingredients: '',
-     loading: false 
+     loading: false,
   }
 
     async componentDidMount() {
@@ -129,14 +129,15 @@ export default class Results extends Component {
     }
 
     addFavorite(item) {
-      AsyncStorage.setItem(item.id.toString(), item.title + "," + item.image);
+      AsyncStorage.setItem(item.id.toString(), item.title + "#" + item.image);
     }
 
     async showRecipe (item) {
       let INSTRUCTIONS = '';
       this.setState({modalVisible: true, currentRecipe: item})
       try {
-        const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() +'/analyzedInstructions?apiKey=550d7b10c49b4500b59cca143ff98c59'
+        const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() 
+                    +'/analyzedInstructions?apiKey=550d7b10c49b4500b59cca143ff98c59'
         const recipeApiCall = await fetch(uri);
         INSTRUCTIONS = await recipeApiCall.json();        
         
@@ -165,12 +166,12 @@ export default class Results extends Component {
           style={{width: screenwidth - 40, height: 180, borderRadius: 50 / 2}}
           source={{uri: item.image}}/>
         </TouchableOpacity>
-        <View style={{ flex: 1, position: "absolute", 
+        <TouchableOpacity style={{ flex: 0.5, position: "absolute", 
         right: 15,
-        top: 5,backgroundColor: 'transparent'}}>
+        top: 5}}>
           <Icon.Button name="heart" color={'#FFBE16'} size={30} backgroundColor='transparent' 
             onPress={() => this.addFavorite(item)}/>
-        </View>
+        </TouchableOpacity>
         <View style={styles.recipeNameBox}>
           <Text style={styles.recipeName}>{item.title.toLowerCase()}</Text>
         </View>

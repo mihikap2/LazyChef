@@ -28,8 +28,8 @@ export default class Favorites extends Component {
           AsyncStorage.multiGet(keys, (error, stores) => {
             stores.map((result, i, store) => {
               let id = store[i][0]
-              let name = store[i][1].split(",")[0]
-              let url = store[i][1].split(",")[1]
+              let name = store[i][1].split("#")[0]
+              let url = store[i][1].split("#")[1]
               let obj = {'id': id, 'name': name, 'url': url}
               LIST.push(obj)
             });
@@ -44,8 +44,8 @@ export default class Favorites extends Component {
           AsyncStorage.multiGet(keys, (error, stores) => {
             stores.map((result, i, store) => {
               let id = store[i][0]
-              let name = store[i][1].split(",")[0]
-              let url = store[i][1].split(",")[1]
+              let name = store[i][1].split("#")[0]
+              let url = store[i][1].split("#")[1]
               let obj = {'id': id, 'name': name, 'url': url}
               LIST.push(obj)
             });
@@ -75,12 +75,14 @@ export default class Favorites extends Component {
     this.setState({modalVisible: true, currentRecipe: item})
     try {
       const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() +'/analyzedInstructions?apiKey=550d7b10c49b4500b59cca143ff98c59'
+      console.log(uri)
       const recipeApiCall = await fetch(uri);
       INSTRUCTIONS = await recipeApiCall.json();        
       
     } catch(err) {
         console.log("Error fetching data-----------", err);
     }
+    console.log(INSTRUCTIONS)
     this.setState({instructions: INSTRUCTIONS});
     let STEPS = ''
     let stepList = this.state.instructions[0].steps
@@ -88,9 +90,19 @@ export default class Favorites extends Component {
       STEPS += item.number + '. ' + item.step + '\n\n';
     })
     let INGREDIENTS = ''
-    let ingredientList = item.missedIngredients
-    ingredientList.map((item, index) => {
-      INGREDIENTS += item.originalString + '\n\n';
+    let info;
+    try {
+      const uri = 'https://api.spoonacular.com/recipes/' + item.id.toString() +'/information?apiKey=550d7b10c49b4500b59cca143ff98c59'
+      console.log(uri)
+      const recipeApiCall = await fetch(uri);
+      info = await recipeApiCall.json();        
+      
+    } catch(err) {
+        console.log("Error fetching data-----------", err);
+    }
+    let ingredientList = info.extendedIngredients
+    ingredientList.map((item) => {
+      INGREDIENTS += item.original + '\n\n';
     })
   this.setState({steps: STEPS, ingredients: INGREDIENTS})
   }
@@ -132,7 +144,7 @@ export default class Favorites extends Component {
                 <ScrollView style={{flex: 0.8, marginTop: 150 , width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
                 <Image
                   style={{width: screenwidth, height: 240, borderTopLeftRadius: 25, borderTopRightRadius: 25}}
-                  source={{uri: this.state.currentRecipe.image}}/>
+                  source={{uri: this.state.currentRecipe.url}}/>
                   <View style={{alignItems: 'center'}}>
                       <Text style={{
                           fontFamily : 'Comfortaa-Regular',
@@ -161,14 +173,14 @@ export default class Favorites extends Component {
               </View>
 
                 <View style={styles.pageheader}>
-                    <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row', marginBottom: 30}}>
+                    <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row', marginBottom: 0}}>
                         <Text style={styles.headerText}>Favorites</Text>
                     </View>
                     <View style={{flex: 1, alignItems: 'flex-start', flexDirection: 'row'}}>
                         <Text style={styles.subHeaderText}>MY GO-TO RECIPES</Text>
                     </View>
                 </View>
-                <View style={{flex: 4, alignItems: "flex-start", flexDirection: 'row'}}>
+                <View style={{flex: 5, alignItems: "flex-start", flexDirection: 'row'}}>
                   <FlatList
                     keyExtractor={item => item.id.toString()}
                     data={this.state.list}
@@ -184,7 +196,7 @@ const styles = StyleSheet.create({
   pageheader : {
     marginHorizontal: 35,
     marginTop: 35,
-    flex : 0.8,
+    flex : 1.2,
     alignItems: 'flex-start',
     flexDirection: 'column'
   },
@@ -193,8 +205,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     color: 'black',
     fontSize: 24,
-    flex: 2,
-    marginBottom: 5
+    flex: 3,
+    paddingBottom: 10
   },
   subHeaderText : {
     fontFamily : 'Roboto-Bold',
