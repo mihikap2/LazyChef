@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, FlatList, Image, ScrollView, ActivityIndicator,
 import * as Font from 'expo-font';
 import {Dimensions, TouchableOpacity} from 'react-native';
 import Modal from "react-native-modal";
-import './App.js'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {AsyncStorage} from 'react-native';
 
@@ -214,7 +213,7 @@ export default class Results extends Component {
                 isVisible={this.state.modalVisible}
                 onBackdropPress={()=> this.setState({modalVisible: false})}
                 >
-                <ScrollView style={{flex: 0.8, marginTop: 150 , width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+                <ScrollView style={{flex: 0.8, marginTop: screenheight/6.35, width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
                 <Image
                   style={{width: screenwidth, height: 240, borderTopLeftRadius: 25, borderTopRightRadius: 25}}
                   source={{uri: this.state.currentRecipe.image}}/>

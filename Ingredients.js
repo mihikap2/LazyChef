@@ -16,7 +16,8 @@ const DATA = global.list
 export default class Ingredients extends Component {
     state = {
         list: DATA,
-        search: ''
+        search: '',
+        loading: false
     }
     
     async componentDidMount() {
@@ -24,9 +25,9 @@ export default class Ingredients extends Component {
         await Font.loadAsync({
           'Comfortaa-Regular': require('./assets/fonts/Comfortaa-Regular.ttf'),
           'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
-
         });
-    }
+        this.setState({ loading: true })
+      }
     componentDidUpdate() {
       global.list = this.state.list
     }
@@ -84,6 +85,8 @@ export default class Ingredients extends Component {
     );
 
     render() {
+      if (this.state.loading) {
+
         return (
             <View style={styles.container}>
                 <View style={styles.pageheader}>
@@ -118,6 +121,8 @@ export default class Ingredients extends Component {
                 </View> 
           </View>
     );
+        }
+        return(<View></View>)
   }
 }
 

@@ -8,6 +8,7 @@ import Modal from "react-native-modal";
 
 const current = { 'title': 'hello'}
 const screenwidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
 
 export default class Favorites extends Component {
   state = {
@@ -141,7 +142,7 @@ export default class Favorites extends Component {
                 isVisible={this.state.modalVisible}
                 onBackdropPress={()=> this.setState({modalVisible: false})}
                 >
-                <ScrollView style={{flex: 0.8, marginTop: 150 , width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+                <ScrollView style={{flex: 0.8, marginTop: screenHeight/6.35 , width: screenwidth, backgroundColor: '#FFF', borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
                 <Image
                   style={{width: screenwidth, height: 240, borderTopLeftRadius: 25, borderTopRightRadius: 25}}
                   source={{uri: this.state.currentRecipe.url}}/>
@@ -153,7 +154,7 @@ export default class Favorites extends Component {
                           textAlign: 'center',
                           marginHorizontal: 10,
                           paddingVertical: 25
-                        }}>{this.state.currentRecipe.title }</Text>
+                        }}>{this.state.currentRecipe.name}</Text>
                   </View>
                   <View>
                     <Text style={styles.smallHeader}>Ingredients</Text>
@@ -189,6 +190,7 @@ export default class Favorites extends Component {
                 </View>
           </View>
     );
+                      
   }
 }
 

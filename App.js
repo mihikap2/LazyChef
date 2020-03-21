@@ -37,7 +37,7 @@ export default function App() {
             <Icon name="search" color={color} size={30} />
           ),
         }}/>
-      <Tab.Screen 
+       <Tab.Screen 
         name="Favorites" 
         component={Favorites} 
         options={{
